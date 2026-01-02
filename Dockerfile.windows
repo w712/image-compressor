@@ -1,0 +1,24 @@
+# 使用 x86_64 平台的 Go 镜像
+FROM --platform=linux/amd64 golang:1.24-bookworm
+
+# 设置环境变量避免交互式提示
+ENV DEBIAN_FRONTEND=noninteractive
+
+# 安装 MinGW 和 Node.js
+RUN apt-get update && apt-get install -y \
+    gcc-mingw-w64-x86-64 \
+    nodejs \
+    npm \
+    && rm -rf /var/lib/apt/lists/*
+
+# 安装 Wails CLI
+RUN go install github.com/wailsapp/wails/v2/cmd/wails@latest
+
+WORKDIR /src
+
+# 设置交叉编译环境变量
+ENV CGO_ENABLED=1
+ENV CC=x86_64-w64-mingw32-gcc
+
+# 构建命令
+CMD ["wails", "build", "-platform", "windows/amd64"]
